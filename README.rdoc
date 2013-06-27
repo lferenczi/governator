@@ -1,27 +1,35 @@
 == DESCRIPTION
 
-Governator is a library of extensions and utilities that enhance Google Guice to 
-provide: classpath scanning and automatic binding, lifecycle management, configuration 
-to field mapping, field validation and parallelized object warmup.
+governator-mini is a fork and simplification of netflix/governator.
 
 == DETAILS
 
-Please see the doc at https://github.com/Netflix/governator/wiki
+The following features are removed in the mini version:
+- no classpath scanning
+- no auto binding
+- no validation
+- no grapher
+- no Archaius bindings
 
-== BUILDING
+Source compatibility updated to Java 7, jsr166y removed, replaced with
+JDK version, guava dependency updated to 14.0.1
 
-Governator is built via Gradle (http://www.gradle.org). To build from the command line:
-    ./gradlew build
+For the original documentation please see: https://github.com/Netflix/governator/wiki
 
 == ARTIFACTS
 
-Governator binaries are published to Maven Central. Please see the docs for details.
+governator-mini is currently not published. Please build for yourself
 
 == AUTHOR
 
+Laszlo Ferenczi (mailto:lferenczi@gmail.com)
+
+Original credits:
 Jordan Zimmerman (mailto:jzimmerman@netflix.com)
 
 == LICENSE
+
+Keeping the original...
 
 Copyright 2012 Netflix, Inc.
 
