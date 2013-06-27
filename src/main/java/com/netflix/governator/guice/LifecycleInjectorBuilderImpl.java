@@ -21,7 +21,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
-import com.netflix.governator.lifecycle.ClasspathScanner;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -29,11 +29,7 @@ import java.util.List;
 class LifecycleInjectorBuilderImpl implements LifecycleInjectorBuilder
 {
     private List<Module> modules = Lists.newArrayList();
-    private Collection<Class<?>> ignoreClasses = Lists.newArrayList();
-    private Collection<String> basePackages = Lists.newArrayList();
-    private boolean ignoreAllClasses = false;
     private BootstrapModule bootstrapModule = null;
-    private ClasspathScanner scanner = null;
     private Stage stage = Stage.PRODUCTION;
 
     @Override
@@ -77,40 +73,6 @@ class LifecycleInjectorBuilderImpl implements LifecycleInjectorBuilder
     }
 
     @Override
-    public LifecycleInjectorBuilder ignoringAutoBindClasses(Collection<Class<?>> ignoreClasses)
-    {
-        this.ignoreClasses = ImmutableList.copyOf(ignoreClasses);
-        return this;
-    }
-
-    @Override
-    public LifecycleInjectorBuilder ignoringAllAutoBindClasses()
-    {
-        this.ignoreAllClasses = true;
-        return this;
-    }
-
-    @Override
-    public LifecycleInjectorBuilder usingBasePackages(String... basePackages)
-    {
-        return usingBasePackages(Arrays.asList(basePackages));
-    }
-
-    @Override
-    public LifecycleInjectorBuilder usingBasePackages(Collection<String> basePackages)
-    {
-        this.basePackages = Lists.newArrayList(basePackages);
-        return this;
-    }
-
-    @Override
-    public LifecycleInjectorBuilder usingClasspathScanner(ClasspathScanner scanner)
-    {
-        this.scanner = scanner;
-        return this;
-    }
-
-    @Override
     public LifecycleInjectorBuilder inStage(Stage stage)
     {
         this.stage = stage;
@@ -120,7 +82,7 @@ class LifecycleInjectorBuilderImpl implements LifecycleInjectorBuilder
     @Override
     public LifecycleInjector build()
     {
-        return new LifecycleInjector(modules, ignoreClasses, ignoreAllClasses, bootstrapModule, scanner, basePackages, stage);
+        return new LifecycleInjector(modules, bootstrapModule, stage);
     }
 
     @Override

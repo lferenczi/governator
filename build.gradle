@@ -1,49 +1,52 @@
-// Establish version and status
-ext.githubProjectName = rootProject.name // Change if github project name is not the same as the root project's name
-group = "com.netflix.${githubProjectName}"
-
-buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral() // maven { url 'http://jcenter.bintray.com' }
-    }
-    apply from: file('gradle/buildscript.gradle'), to: buildscript 
-}
-
-allprojects {
-    repositories { 
-        mavenCentral() // maven { url: 'http://jcenter.bintray.com' }
-    }
-}
-
-apply from: file('gradle/convention.gradle')
-apply from: file('gradle/maven.gradle')
-//apply from: file('gradle/check.gradle')
-//apply from: file('gradle/license.gradle')
-apply from: file('gradle/release.gradle')
-
+apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+
+sourceCompatibility = 1.7
+
+group = "org.lferenczi.governator-mini"
+
+repositories {
+    mavenCentral()
+}
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+    extension 'jar'
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    from javadoc.destinationDir
+    classifier 'javadoc'
+    extension 'jar'
+}
+
+artifacts {
+    archives tasks.sourcesJar
+    archives tasks.javadocJar
+}
 
 test {
     useTestNG()
 }
 
-dependencies {
-    compile     'javax.inject:javax.inject:1'
-    compile     'com.google.guava:guava:11.0.1'
-    compile     'org.slf4j:slf4j-api:1.6.3'
-    compile     'org.hibernate:hibernate-validator:4.1.0.Final'
-    compile     'org.apache.xbean:xbean-finder:3.11.1'
-    compile     'org.apache.xbean:xbean-bundleutils:3.11.1'
-    compile     'asm:asm-all:3.2'
-    compile     'com.google.inject:guice:3.0'
-    compile     'com.google.inject.extensions:guice-multibindings:3.0'
-    compile     'com.netflix.archaius:archaius-core:0.4.1'
-    compile     'com.google.inject.extensions:guice-grapher:3.0'    // should be provided - only if you want graphing
+configurations {
+    compile.exclude module: 'cglib'
+}
 
-    // if you are using Java 7 you can remove this and switch to the JDK version
-    compile     'org.codehaus.jsr166-mirror:jsr166y:1.7.0'
+dependencies {
+    compile (group: 'com.google.inject', name: 'guice', version: '3.0') {
+        exclude module: 'cglib'
+//        exclude (module: 'asm')
+    }
+    compile (group: 'com.google.inject.extensions', name: 'guice-multibindings', version: '3.0')
+    compile (group: 'com.google.guava', name: 'guava', version: '14.0.1')
+    compile (group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5')
+//    compile ('org.hibernate:hibernate-validator:4.1.0.Final'
+//    compile     'org.apache.xbean:xbean-finder:3.11.1'
+//    compile     'org.apache.xbean:xbean-bundleutils:3.11.1'
+//    compile     'asm:asm-all:3.2'
 
     testCompile 'org.testng:testng:6.1.1'
     testCompile 'org.mockito:mockito-core:1.8.5'

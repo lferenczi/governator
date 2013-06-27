@@ -24,7 +24,6 @@ import com.netflix.governator.configuration.ConfigurationDocumentation;
 import com.netflix.governator.configuration.ConfigurationKey;
 import com.netflix.governator.configuration.ConfigurationProvider;
 import com.netflix.governator.configuration.KeyParser;
-import org.apache.commons.configuration.ConversionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
@@ -83,11 +82,6 @@ class ConfigurationProcessor
                 }
             }
             catch ( IllegalArgumentException e )
-            {
-                ignoreTypeMismtachIfConfigured(configuration, configurationName, e);
-                field = null;
-            }
-            catch ( ConversionException e )
             {
                 ignoreTypeMismtachIfConfigured(configuration, configurationName, e);
                 field = null;

@@ -31,7 +31,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
-import javax.validation.Constraint;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -46,8 +45,6 @@ public class LifecycleMethods
     private final Multimap<Class<? extends Annotation>, Field> fieldMap = ArrayListMultimap.create();
     private final Multimap<Class<? extends Annotation>, Method> methodMap = ArrayListMultimap.create();
     private final Multimap<Class<? extends Annotation>, Annotation> classMap = ArrayListMultimap.create();
-
-    private boolean hasValidations = false;
 
     private static final Collection<Class<? extends Annotation>> fieldAnnotations;
     private static final Collection<Class<? extends Annotation>> methodAnnotations;
@@ -83,7 +80,7 @@ public class LifecycleMethods
 
     public boolean hasLifecycleAnnotations()
     {
-        return hasValidations || (methodMap.size() > 0) || (fieldMap.size() > 0);
+        return (methodMap.size() > 0) || (fieldMap.size() > 0);
     }
 
     public Collection<Method> methodsFor(Class<? extends Annotation> annotation)
@@ -136,11 +133,6 @@ public class LifecycleMethods
             if ( field.isSynthetic() )
             {
                 continue;
-            }
-
-            if ( !hasValidations )
-            {
-                checkForValidations(field);
             }
 
             for ( Class<? extends Annotation> annotationClass : fieldAnnotations )
@@ -208,18 +200,6 @@ public class LifecycleMethods
             }
 
             handleReflectionError(clazz, e.getCause());
-        }
-    }
-
-    private void checkForValidations(Field field)
-    {
-        for ( Annotation annotation : field.getDeclaredAnnotations() )
-        {
-            if ( annotation.annotationType().isAnnotationPresent(Constraint.class) )
-            {
-                hasValidations = true;
-                break;
-            }
         }
     }
 

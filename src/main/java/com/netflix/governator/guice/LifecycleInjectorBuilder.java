@@ -19,8 +19,7 @@ package com.netflix.governator.guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
-import com.netflix.governator.annotations.AutoBindSingleton;
-import com.netflix.governator.lifecycle.ClasspathScanner;
+
 import java.util.Collection;
 
 /**
@@ -67,48 +66,6 @@ public interface LifecycleInjectorBuilder
      * @return this
      */
     public LifecycleInjectorBuilder withAdditionalModules(Module... modules);
-
-    /**
-     * Specify specific {@link AutoBindSingleton} classes that should NOT be bound in the main
-     * binding phase
-     *
-     * @param ignoreClasses classes to not bind
-     * @return this
-     */
-    public LifecycleInjectorBuilder ignoringAutoBindClasses(Collection<Class<?>> ignoreClasses);
-
-    /**
-     * Do not bind ANY {@link AutoBindSingleton} classes
-     *
-     * @return this
-     */
-    public LifecycleInjectorBuilder ignoringAllAutoBindClasses();
-
-    /**
-     * Specify the base packages for CLASSPATH scanning. Packages are recursively scanned
-     *
-     * @param basePackages packages
-     * @return this
-     */
-    public LifecycleInjectorBuilder usingBasePackages(String... basePackages);
-
-    /**
-     * Specify the base packages for CLASSPATH scanning. Packages are recursively scanned
-     *
-     * @param basePackages packages
-     * @return this
-     */
-    public LifecycleInjectorBuilder usingBasePackages(Collection<String> basePackages);
-
-    /**
-     * Normally, the classpath scanner is allocated internally. This method allows for a custom
-     * scanner to be used. NOTE: Any packages specifies via {@link #usingBasePackages(String...)} will
-     * be ignored if this method is called.
-     *
-     * @param scanner the scanner to use
-     * @return this
-     */
-    public LifecycleInjectorBuilder usingClasspathScanner(ClasspathScanner scanner);
 
     /**
      * Set the Guice stage - the default is Production

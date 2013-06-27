@@ -40,11 +40,6 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
 import javax.naming.NamingException;
-import javax.validation.ConstraintViolation;
-import javax.validation.Path;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.beans.Introspector;
 import java.io.Closeable;
 import java.lang.annotation.Annotation;
@@ -74,7 +69,6 @@ public class LifecycleManager implements Closeable
     private final ConfigurationProvider configurationProvider;
     private final Collection<LifecycleListener> listeners;
     private final Collection<ResourceLocator> resourceLocators;
-    private final ValidatorFactory factory;
     private final DAGManager dagManager = new DAGManager();
     private final PostStartArguments postStartArguments;
     private final AtomicReference<WarmUpSession> postStartWarmUpSession = new AtomicReference<WarmUpSession>(null);
@@ -97,7 +91,6 @@ public class LifecycleManager implements Closeable
         configurationProvider = arguments.getConfigurationProvider();
         listeners = ImmutableSet.copyOf(arguments.getLifecycleListeners());
         resourceLocators = ImmutableSet.copyOf(arguments.getResourceLocators());
-        factory = Validation.buildDefaultValidatorFactory();
         postStartArguments = arguments.getPostStartArguments();
     }
 
@@ -206,8 +199,6 @@ public class LifecycleManager implements Closeable
     {
         Preconditions.checkState(state.compareAndSet(State.LATENT, State.STARTING), "Already started");
 
-        validate();
-
         long maxMs = (unit != null) ? unit.toMillis(maxWait) : Long.MAX_VALUE;
         WarmUpSession warmUpSession = new WarmUpSession(getWarmUpDriver(), dagManager);
         boolean success = warmUpSession.doImmediate(maxMs);
@@ -242,44 +233,6 @@ public class LifecycleManager implements Closeable
     }
 
     /**
-     * Run the validations on the managed objects. This is done automatically when {@link #start()} is called.
-     * But you can call this at any time you need.
-     *
-     * @throws ValidationException
-     */
-    public void validate() throws ValidationException
-    {
-        ValidationException exception = null;
-        Validator validator = factory.getValidator();
-        for ( StateKey key : objectStates.keySet() )
-        {
-            Object obj = key.obj;
-            exception = internalValidateObject(exception, obj, validator);
-        }
-
-        if ( exception != null )
-        {
-            throw exception;
-        }
-    }
-
-    /**
-     * Run validations on the given object
-     *
-     * @param obj the object to validate
-     * @throws ValidationException
-     */
-    public void validate(Object obj) throws ValidationException
-    {
-        Validator validator = factory.getValidator();
-        ValidationException exception = internalValidateObject(null, obj, validator);
-        if ( exception != null )
-        {
-            throw exception;
-        }
-    }
-
-    /**
      * @return the internal DAG manager
      */
     public DAGManager getDAGManager()
@@ -294,25 +247,6 @@ public class LifecycleManager implements Closeable
         {
             listener.stateChanged(obj, state);
         }
-    }
-
-    private ValidationException internalValidateObject(ValidationException exception, Object obj, Validator validator)
-    {
-        Set<ConstraintViolation<Object>> violations = validator.validate(obj);
-        for ( ConstraintViolation<Object> violation : violations )
-        {
-            String path = getPath(violation);
-            String message = String.format("%s - %s.%s = %s", violation.getMessage(), obj.getClass().getName(), path, String.valueOf(violation.getInvalidValue()));
-            if ( exception == null )
-            {
-                exception = new ValidationException(message);
-            }
-            else
-            {
-                exception = new ValidationException(message, exception);
-            }
-        }
-        return exception;
     }
 
     private void startInstance(Object obj, LifecycleMethods methods) throws Exception
@@ -445,6 +379,11 @@ public class LifecycleManager implements Closeable
             }
 
             @Override
+            public String lookup() {
+                return null;
+            }
+
+            @Override
             public Class type()
             {
                 return (resource.type() == Object.class) ? siteType : resource.type();
@@ -547,27 +486,8 @@ public class LifecycleManager implements Closeable
         return reversed;
     }
 
-    private String getPath(ConstraintViolation<Object> violation)
-    {
-        Iterable<String> transformed = Iterables.transform
-            (
-                violation.getPropertyPath(),
-                new Function<Path.Node, String>()
-                {
-                    @Override
-                    public String apply(Path.Node node)
-                    {
-                        return node.getName();
-                    }
-                }
-            );
-        return Joiner.on(".").join(transformed);
-    }
-
     private void initializeObjectPostStart(Object obj) throws ValidationException
     {
-        validate(obj);
-
         postStartWarmUpSession.compareAndSet(null, new WarmUpSession(getWarmUpDriver(), dagManager));
         WarmUpSession session = postStartWarmUpSession.get();
         session.doInBackground();

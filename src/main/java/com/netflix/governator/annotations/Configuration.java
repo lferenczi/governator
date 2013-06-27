@@ -49,7 +49,6 @@ public @interface Configuration
      * is one amongst:
      * <ul>
      * <li>{@link IllegalArgumentException}</li>
-     * <li>{@link org.apache.commons.configuration.ConversionException}</li>
      </ul>
      *
      * @return <code>true</code> if type mismatch must be ignored. <code>false</code> otherwise. Default value is

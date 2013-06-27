@@ -16,8 +16,6 @@
 
 package com.netflix.governator.lifecycle;
 
-import com.netflix.config.ConfigurationManager;
-import com.netflix.governator.configuration.ArchaiusConfigurationProvider;
 import com.netflix.governator.configuration.ConfigurationOwnershipPolicies;
 import com.netflix.governator.configuration.ConfigurationProvider;
 import com.netflix.governator.configuration.PropertiesConfigurationProvider;
@@ -123,60 +121,6 @@ public class TestConfiguration
         testTypeMismatch(new PropertiesConfigurationProvider(properties));
     }
 
-    @Test
-    public void     testConfigTypeMismatchWithArchaius() throws Exception
-    {
-        Map<String, String> properties = new HashMap<String, String>();
-        properties.put("test.b", "20");
-        properties.put("test.i", "foo");
-        properties.put("test.l", "bar");
-        properties.put("test.d", "zar");
-        properties.put("test.s", "a is a");
-        properties.put("test.dt", "dar");
-
-        //noinspection deprecation
-        testTypeMismatch(new ArchaiusConfigurationProvider(properties));
-    }
-
-    @Test
-    public void     testDynamicConfiguration() throws Exception
-    {
-        LifecycleManagerArguments   arguments = new LifecycleManagerArguments();
-        arguments.getConfigurationProvider().add(ArchaiusConfigurationProvider
-                .builder()
-                    .withOwnershipPolicy(ConfigurationOwnershipPolicies.ownsAll())
-                .build());
-
-        LifecycleManager            manager = new LifecycleManager(arguments);
-
-        ObjectWithDynamicConfig    obj = new ObjectWithDynamicConfig();
-        manager.add(obj);
-        manager.start();
-
-        Assert.assertEquals(obj.aDynamicBool.get(), Boolean.TRUE);
-        Assert.assertEquals(obj.anDynamicInt.get(), new Integer(1));
-        Assert.assertEquals(obj.aDynamicLong.get(), new Long(2L));
-        Assert.assertEquals(obj.aDynamicDouble.get(), 3.4);
-        Assert.assertEquals(obj.aDynamicString.get(), "a is a");
-        Assert.assertEquals(obj.aDynamicDate.get(), null);
-        
-        ConfigurationManager.getConfigInstance().setProperty("test.dynamic.b", "false");
-        ConfigurationManager.getConfigInstance().setProperty("test.dynamic.i", "101");
-        ConfigurationManager.getConfigInstance().setProperty("test.dynamic.l", "201");
-        ConfigurationManager.getConfigInstance().setProperty("test.dynamic.d", "301.4");
-        ConfigurationManager.getConfigInstance().setProperty("test.dynamic.s", "a is b");
-        ConfigurationManager.getConfigInstance().setProperty("test.dynamic.dt", "1964-11-06");
-
-        Assert.assertEquals(obj.aDynamicBool.get(), Boolean.FALSE);
-        Assert.assertEquals(obj.anDynamicInt.get(), new Integer(101));
-        Assert.assertEquals(obj.aDynamicLong.get(), new Long(201L));
-        Assert.assertEquals(obj.aDynamicDouble.get(), 301.4);
-        Assert.assertEquals(obj.aDynamicString.get(), "a is b");
-        
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Assert.assertEquals(obj.aDynamicDate.get(), formatter.parse("1964-11-06"));
-    }
-    
     private void testTypeMismatch(ConfigurationProvider provider) throws Exception {
         LifecycleManagerArguments arguments = new LifecycleManagerArguments();
         arguments.getConfigurationProvider().add(provider);
